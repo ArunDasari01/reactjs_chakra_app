@@ -1,0 +1,23 @@
+pipelines:
+  branches:
+    master:
+      - step:
+          name: Deploy to dev (/dev)
+          image: python:3.7-alpine
+          caches:
+            - pip
+          deployment: test
+          script:
+            - pip install awscli
+            - aws s3 sync build/ s3://appdev2.tansycloud.com/ --acl public-read
+      - step:
+          name: Deploy to production (/)
+          trigger: manual
+          image: python:3.7-alpine
+          caches:
+            - pip
+          deployment: production
+          script:
+            - pip install awscli
+            - aws s3 sync build/ s3://app2.tansycloud.com/ --acl public-read
+            - aws cloudfront create-invalidation --distribution-id E3HDTDOTKW1CHL --paths "/*"
